@@ -1,0 +1,162 @@
+{% extends "/common/base.html" %}
+{% set active_view = "ziroom_index" %}
+{% block conent %}
+    <style>
+        .title_thumb {
+            height: 80px;
+            display: block;
+        }
+        .search_bar {
+            margin-bottom: 10px;
+        }
+        .page_count {
+            padding-top: 28px;
+        }
+        .page_jump {
+            padding-top: 18px;
+        }
+    </style>
+    <div class="container-fluid">
+        <div class="row" style="padding-bottom: 80px;">
+            <div class="col-sm-2">
+                {% include('zufang/ziroom/nav.html') %}
+            </div>
+            <div class="col-sm-10">
+
+                <div class="search_bar">
+                    <form class="form-inline" method="POST" id="search_from" action="{{url_for('zufang_ziroom.index', _external=True)}}">
+                        <div class="form-group">
+                            <label>标题</label>
+                            <input type="text" class="form-control" id="room_name" name="room_name"
+                                   value="{% if room_name %}{{room_name}}{% endif %}" placeholder="房间标题关键字">
+                        </div>
+                        <div class="form-group">
+                            <label>城市</label>
+                            <select class="form-control" id="city" name="city">
+                                <option value="全部" {% if not city or city=='全部' %}selected{% endif %}>全部</option>
+                                <option value="北京" {% if city=='北京' %}selected{% endif %}>北京</option>
+                                <option value="上海" {% if city=='上海' %}selected{% endif %}>上海</option>
+                                <option value="深圳" {% if city=='深圳' %}selected{% endif %}>深圳</option>
+                                <option value="杭州" {% if city=='杭州' %}selected{% endif %}>杭州</option>
+                                <option value="南京" {% if city=='南京' %}selected{% endif %}>南京</option>
+                                <option value="广州" {% if city=='广州' %}selected{% endif %}>广州</option>
+                                <option value="成都" {% if city=='成都' %}selected{% endif %}>成都</option>
+                                <option value="武汉" {% if city=='武汉' %}selected{% endif %}>武汉</option>
+                                <option value="天津" {% if city=='天津' %}selected{% endif %}>天津</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="search_submit">搜索</button>
+                    </form>
+                </div>
+
+                <table class="table table-hover">
+                    <caption>{{page_title}}</caption>
+                    <thead>
+                        <tr>
+                            <th class="col-sm-1">#</th>
+                            <th class="col-sm-1">ID</th>
+                            <th class="col-sm-2">标题</th>
+                            <th class="col-sm-2">位置</th>
+                            <th class="col-sm-1">价格</th>
+                            <th class="col-sm-1">户型</th>
+                            <th class="col-sm-1">出租方式</th>
+                            <th class="col-sm-2">更新时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in rooms %}
+                        <tr>
+                            <td><img src="{{room.title_thumb | imgsrc}}" class="img-responsive img-rounded title_thumb"></td>
+                            <td>
+                                {% if room.room_link %}
+                                    <a href="{{room.room_link}}" target="_blank">{{room.room_id or ''}}</a></dd><br/>
+                                {% else %}
+                                    {{room.room_id or ''}}
+                                {% endif %}
+                            </td>
+                            <td><a href="{{url_for('zufang_ziroom.detail', room_id=room.room_id)}}" target="_blank">{{room.room_name or ''}}</a></td>
+                            <td>{{room.city or ''}} | {{room.district or ''}} | {{room.community or ''}}</td>
+                            <td>
+                            {% if room.price['num'] %}
+                                {{room.price['num']}}
+                                {% if room.price['payment'] %}
+                                ({{room.price['payment']}})
+                                {% endif %}
+                            {% endif %}
+                            </td>
+                            <td>
+                            {% if room.house_type %}
+                                {{room.house_type[0]}}室{{room.house_type[1]}}厅
+                            {% endif %}
+                            </td>
+                            <td>{{room.rent_type or ''}}</td>
+                            <td>{{room.uptime | int2time}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="row">
+                    <div class="col-sm-2">
+                        <p class="page_count">共 {{pagination.total_page}} 页 - {{pagination.total}} 条</p>
+                    </div>
+                    <div class="col-sm-8">
+                        <nav>
+                            <ul class="pagination">
+                                {% if pagination.has_prev %}
+                                <li><a href="{{url_for('zufang_ziroom.index', page=pagination.prev_num)}}" aria-label="Previous"><span aria-hidden="true">«</span></a></li>
+                                {% endif %}
+
+                                {% for page in pagination.iter_pages() %}
+                                    {% if page %}
+                                    <li class="{% if page == pagination.page %}active{% endif %}">
+                                        <a href="{{url_for('zufang_ziroom.index', page=page)}}">{{page}}</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="disabled"><a href="javascript:return false;">…</a></li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if pagination.has_next %}
+                                <li><a href="{{url_for('zufang_ziroom.index', page=pagination.next_num)}}" aria-label="Next"><span aria-hidden="true">»</span></a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-sm-2">
+                        <form class="form-inline" onsubmit="return false;">
+                            <div class="form-group page_jump">
+                                <span>转到 </span>
+                                <input type="text" class="form-control" id="input_jump" style="width: 60px;">
+                                <span> 页</span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+<script>
+$(document).ready(function(){
+    // 点击页码
+    $('ul.pagination a').click(function () {
+        href = $(this).attr('href')
+        $('#search_from').attr('action', href).submit()
+        return false
+    })
+    // 跳转某页
+    $('#input_jump').bind('keypress',function(event){
+        if(event.keyCode == "13") {
+            page = Number($.trim($('#input_jump').val()))
+            if(!isNaN(page) && page > 0) {
+                action = $('#search_from').attr('action')
+                $('#search_from').attr('action', action+'?page='+page).submit()
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+

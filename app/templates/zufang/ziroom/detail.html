@@ -1,0 +1,328 @@
+{% extends "/common/base.html" %}
+{% set active_view = "ziroom_index" %}
+{% block conent %}
+    <style>
+        .photos {
+            width: 400px;
+        }
+        .mtp0 {
+            margin-top: 0px;
+        }
+        #info {
+            padding-top: 10px;
+            padding-bottom: 100px;
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2">
+                <ul class="nav nav-pills nav-stacked">
+                    {% include('zufang/ziroom/nav.html') %}
+                </ul>
+            </div>
+            <div class="col-sm-10">
+
+                <h3 class="mtp0">{{room.room_name or ''}} <small>{{room.city or ''}} {{room.district or ''}} {{room.community or ''}}</small></h3>
+
+                <div id="info">
+                    <dl class="dl-horizontal">
+                        <dt>房间 ID：</dt>
+                        <dd>
+                            {% if room.room_link %}
+                                <a href="{{room.room_link}}" target="_blank">{{room.room_id or ''}}</a></dd><br/>
+                            {% else %}
+                                {{room.room_id or ''}}
+                            {% endif %}
+                        <dt>标题：</dt>
+                        <dd>{{room.room_name or ''}}</dd><br/>
+                        <dt>价格：</dt>
+                        <dd>
+                            {% if room.price['num'] %}
+                                {{room.price['num']}}
+                                    {% if room.price['payment'] %}
+                                    ({{room.price['payment']}})
+                                    {% endif %}
+                            {% endif %}
+                        </dd><br/>
+                        <dt>出租状态：</dt>
+                        <dd>
+                            {{room.rent_status or ''}}
+                        </dd><br/>
+                        <dt>房间图片：</dt>
+                        <dd>
+                            {% if room.photos %}
+                            <div id="carousel-example-generic" class="carousel slide photos" data-ride="carousel">
+                                <!-- Indicators -->
+                                <ol class="carousel-indicators">
+                                    {% for img in room.photos %}
+                                    <li data-target="#carousel-example-generic" data-slide-to="{{loop.index0}}" class="{% if loop.index0 == 0 %}active{% endif %}"></li>
+                                    {% endfor %}
+                                </ol>
+                                <!-- Wrapper for slides -->
+                                <div class="carousel-inner" role="listbox">
+                                    {% for img in room.photos %}
+                                    <div class="item {% if room.photos.index(img)==0 %}active{% endif %}">
+                                        <img src="{{img | imgsrc}}" alt="{{img['title']}}" class="photos">
+                                        <div class="carousel-caption">{{img['title'] | default('')}}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <!-- Controls -->
+                                <a class="left carousel-control" href="#carousel-example-generic" role="button"
+                                   data-slide="prev">
+                                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                                <a class="right carousel-control" href="#carousel-example-generic" role="button"
+                                   data-slide="next">
+                                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </dd><br/>
+                        <dt>房屋 ID：</dt>
+                        <dd>{{room.house_id or ''}}</dd><br/>
+                        <dt>房间 SN：</dt>
+                        <dd>{{room.room_sn or ''}}</dd><br/>
+                        <dt>朝向：</dt>
+                        <dd>{{room.towards or ''}}</dd><br/>
+                        <dt>面积：</dt>
+                        <dd>{{room.area or ''}}</dd><br/>
+                        <dt>楼层：</dt>
+                        <dd>
+                            {% if room.floor %}
+                                {{room.floor[0]}} / {{room.floor[1]}}
+                            {% endif %}
+                        </dd><br/>
+                        <dt>供暖方式：</dt>
+                        <dd>{{room.heating or ''}}</dd><br/>
+                        <dt>房屋类型：</dt>
+                        <dd>
+                            {% if room.house_type %}
+                                {{room.house_type[0]}} 室 {{room.house_type[1]}} 厅
+                            {% endif %}
+                        </dd><br/>
+                        <dt>房屋风格：</dt>
+                        <dd>{{room.room_style or ''}}</dd><br/>
+                        <dt>位置：</dt>
+                        <dd>{{room.city or ''}} | {{room.district or ''}} | {{room.community or ''}}</dd><br/>
+                        <dt>地铁：</dt>
+                        {% if room.subway %}
+                            {% for x in room.subway %}
+                                <dd>
+                                    {{x}}
+                                </dd>
+                            {% endfor %}
+                                <br/>
+                        {% else %}
+                            <dd></dd><br/>
+                        {% endif %}
+                        <dt>产品名：</dt>
+                        <dd>
+                        {% if room.product %}
+                            自如{{room.product}}
+                        {% endif %}
+                        </dd><br/>
+                        <dt>出租方式：</dt>
+                        <dd>{{room.rent_type or ''}}</dd><br/>
+                        <dt>首次出租：</dt>
+                        <dd>{{room.is_first_rent | shi_fou}}</dd><br/>
+                        <dt>临近地铁：</dt>
+                        <dd>{{room.is_near_subway | shi_fou}}</dd><br/>
+                        <dt>独立阳台：</dt>
+                        <dd>{{room.is_private_balcony | shi_fou}}</dd><br/>
+                        <dt>独立卫生间：</dt>
+                        <dd>{{room.is_private_bathroom | shi_fou}}</dd><br/>
+                        <dt>地图经纬度：</dt>
+                        <dd>
+                            {% if room.map_position %}
+                                {{room.map_position[0]}} - {{room.map_position[1]}}
+                            {% endif %}
+                        </dd><br/>
+                        <dt>房间介绍：</dt>
+                        <dd>{{room.room_introduce or ''}}</dd><br/>
+
+                        <dt>付款：</dt>
+                        {% if room.payment.info %}
+                        <dd>
+                            <table class="table table-hover" style="max-width: 400px;">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-1">付款方式</th>
+                                    <th class="col-sm-1">租金</th>
+                                    <th class="col-sm-1">押金</th>
+                                    <th class="col-sm-1">服务费</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for x in room.payment.info %}
+                                <tr>
+                                    <td>{{x.period or ''}}</td>
+                                    <td>{{x.rent.price or ''}}</td>
+                                    <td>{{x.deposit.price or ''}}</td>
+                                    <td>{{x.service_charge.price or ''}}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </dd>
+                        {% else %}
+                        <dd></dd><br/>
+                        {% endif %}
+
+                        <dt>房屋配置：</dt>
+                        {% if room.allocation %}
+                        <dd>
+                            <table class="table table-hover" style="max-width: 800px;">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-1">床</th>
+                                    <th class="col-sm-1">书桌</th>
+                                    <th class="col-sm-1">衣柜</th>
+                                    <th class="col-sm-1">热水器</th>
+                                    <th class="col-sm-1">洗衣机</th>
+                                    <th class="col-sm-1">微波炉</th>
+                                    <th class="col-sm-1">Wi-Fi</th>
+                                    <th class="col-sm-1">空调</th>
+                                    <th class="col-sm-1">智能锁</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>{{room.allocation.bed | shi_fou}}</td>
+                                    <td>{{room.allocation.desk | shi_fou}}</td>
+                                    <td>{{room.allocation.chest | shi_fou}}</td>
+                                    <td>{{room.allocation.calorifier | shi_fou}}</td>
+                                    <td>{{room.allocation.washing | shi_fou}}</td>
+                                    <td>{{room.allocation.microwave | shi_fou}}</td>
+                                    <td>{{room.allocation.wifi | shi_fou}}</td>
+                                    <td>{{room.allocation.airCondition | shi_fou}}</td>
+                                    <td>{{room.allocation.lock | shi_fou}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </dd>
+                        {% else %}
+                        <dd></dd><br/>
+                        {% endif %}
+
+                        <dt>室友信息：</dt>
+                        {% if room.roommates %}
+                        <dd>
+                            <table class="table table-hover" style="max-width: 800px;">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-1">房间</th>
+                                    <th class="col-sm-1">入住状态</th>
+                                    <th class="col-sm-1">性别</th>
+                                    <th class="col-sm-1">星座</th>
+                                    <th class="col-sm-1">工作</th>
+                                    <th class="col-sm-1">入住时间</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for x in room.roommates %}
+                                <tr>
+                                    <td>{{x.room or ''}}</td>
+                                    <td>{{x.status or ''}}</td>
+                                    <td>{{x.gender or ''}}</td>
+                                    <td>{{x.sign or ''}}</td>
+                                    <td>{{x.jobs or ''}}</td>
+                                    <td>{{x.check_in_time or ''}}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </dd>
+                        {% else %}
+                        <dd></dd><br/>
+                        {% endif %}
+
+                        <dt>空气质量：</dt>
+                        {% if room.air['show_info'] %}
+                            {% if room.air['show_info']['show_type']=='pass' %}
+                            <dd>合格</dd>
+                            {% else %}
+                            <dd>不合格</dd>
+                            {% endif %}
+                        {% else %}
+                        <dd></dd>
+                        {% endif %}<br/>
+
+                        <dt>空气质量检测报告：</dt>
+                        {% if room.air['result_list'] %}
+                        <dd>
+                            <table class="table table-hover" style="max-width: 800px;">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-1">房屋编号</th>
+                                    <th class="col-sm-1">检测项目</th>
+                                    <th class="col-sm-1">标准值</th>
+                                    <th class="col-sm-1">现场湿度</th>
+                                    <th class="col-sm-1">现场温度</th>
+                                    <th class="col-sm-1">检测结果</th>
+                                    <th class="col-sm-2">检测时间</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for x in room.air['result_list'] %}
+                                <tr>
+                                    <td>{{x.index_no}}</td>
+                                    <td>{{x.test_item}}</td>
+                                    <td>{{x.hcho_normal_val}}</td>
+                                    <td>{{x.air_test_humidity}}</td>
+                                    <td>{{x.air_test_temperature}}</td>
+                                    <td>{{x.hcho_result}}</td>
+                                    <td>{{x.accep_time}}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </dd>
+                        {% else %}
+                        <dd></dd><br/>
+                        {% endif %}
+
+                        <dt>管家信息：</dt>
+                        {% if room.keeper %}
+                        <dd>
+                            <table class="table table-hover" style="max-width: 500px;">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-1">ID</th>
+                                    <th class="col-sm-1">姓名</th>
+                                    <th class="col-sm-2">联系电话</th>
+                                    <th class="col-sm-1">头像</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>{{room.keeper.keeper_id or ''}}</td>
+                                    <td>{{room.keeper.keeper_name or ''}}</td>
+                                    <td>{{room.keeper.keeper_phone or ''}}</td>
+                                    <td>
+                                        <img src="{{room.keeper.keeper_header | imgsrc}}" style="height:100px;">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </dd>
+                        {% else %}
+                        <dd></dd><br/>
+                        {% endif %}
+
+                        <dt>更新时间：</dt>
+                        <dd>{{room.uptime | int2time}}</dd><br/>
+                    </dl>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+{% endblock %}

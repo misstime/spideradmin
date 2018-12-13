@@ -1,0 +1,31 @@
+{% extends "/common/base.html" %}
+{% set active_view = "main_index" %}
+{% block conent %}
+    <div class="container-fluid">
+        <div class="row" style="padding-bottom: 80px;">
+            <div class="col-sm-2">
+                {% include('main/nav.html') %}
+            </div>
+            <div class="col-sm-10">
+
+                <div class="jumbotron">
+                    <h1>Welcome to spideradmin !</h1>
+                    <p>已完成：</p>
+                    <ul>
+                        <li><a href="{{url_for('zufang_ziroom.index')}}">租房 - 自如</a></li>
+                    </ul>
+                    <p>@todo：</p>
+                    <ul>
+                        <li>用户 && 权限</li>
+                        <li>form提交/html转义 安全</li>
+                        <li>可复用的 分页条、面包屑导航</li>
+                        <li>部署：二级域名、执行用户安全、问题记录</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
